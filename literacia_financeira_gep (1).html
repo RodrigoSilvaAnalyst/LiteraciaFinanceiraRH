@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>Literacia Financeira & GEP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg: #0a0f1e;
+            --color-bg-deep: #060910;
+            --color-surface: #121929;
+            --color-text: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-text-muted: #94a3b8;
+            --color-accent-1: #C9A84C;
+            --color-accent-2: #E8D5B5;
+            --color-accent-3: #8B6914;
+            --color-glass-bg: rgba(255,255,255,0.05);
+            --color-glass-border: rgba(255,255,255,0.08);
+            --color-vignette: rgba(0,0,0,0.45);
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+    </style>
+
+    <style>
+        :root { --color-bg: #0a0f1e; --color-text: #f1f5f9; --glow-color-rgb: 201,168,76; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: var(--color-bg); margin: 0; }
+        body { font-family: var(--font-body); color: var(--color-text); overflow: hidden; height: 100vh; height: 100dvh; width: 100vw; }
+        .deck { width: 100vw; height: 100vh; height: 100dvh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+        .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+        .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1100px; max-height: 100%; padding: clamp(1rem, 3vw, 3.5rem); overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.4) transparent; }
+        .slide > .content::-webkit-scrollbar { width: 6px; }
+        .slide > .content::-webkit-scrollbar-track { background: transparent; }
+        .slide > .content::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.4); border-radius: 3px; }
+        .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: var(--color-glass-bg); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 40px; border: 1px solid var(--color-glass-border); }
+        .nav-btn { width: 40px; height: 40px; border: none; background: var(--color-glass-bg); color: var(--color-accent-1); border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .nav-btn:hover { background: var(--color-glass-border); }
+        .slide-dots { display: flex; gap: 8px; }
+        .slide-dots .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-glass-border); cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .slide-dots .dot.active { background: var(--color-accent-1); transform: scale(1.3); }
+        .slide-counter { font-size: 0.8rem; color: var(--color-text-muted); min-width: 40px; text-align: center; }
+        .reveal { opacity: 0; transform: translateY(20px); }
+
+        .text-glow { text-shadow: 0 0 20px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.2); }
+        .stat-glow { text-shadow: 0 0 30px rgba(201,168,76,0.6), 0 0 60px rgba(201,168,76,0.25); }
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.2); }
+            50% { text-shadow: 0 0 30px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.3); }
+        }
+        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+
+        @keyframes float-slow {
+            0% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(60px, -50px) scale(1.12); }
+            50% { transform: translate(-40px, 40px) scale(0.9); }
+            75% { transform: translate(50px, 20px) scale(1.08); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        @keyframes float-drift {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(-50px, -60px) scale(1.15) rotate(3deg); }
+            66% { transform: translate(40px, 30px) scale(0.88) rotate(-2deg); }
+            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 10s ease-in-out infinite; }
+        .blob:nth-child(2) { animation: float-drift 14s ease-in-out infinite; }
+        .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+
+        .slide::before {
+            content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 256px 256px; opacity: 0.03; mix-blend-mode: overlay;
+        }
+        .slide::after {
+            content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, var(--color-vignette) 100%);
+        }
+
+        .bar-fill { border-radius: 4px; height: 100%; background: linear-gradient(90deg, var(--color-accent-3), var(--color-accent-1)); }
+        .bar-track { background: rgba(255,255,255,0.07); border-radius: 4px; height: 10px; width: 100%; overflow: hidden; }
+        .source-tag { font-size: 0.65rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
+
+        /* Tablets e ecrãs médios */
+        @media (max-width: 900px) {
+            .slide > .content { padding: clamp(1rem, 4vw, 2rem) clamp(1rem, 4vw, 2rem) 90px; }
+            .slide > .content .grid.grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem; }
+            .slide > .content .grid.grid-cols-2 { gap: 1rem; }
+        }
+
+        /* Telemóveis */
+        @media (max-width: 640px) {
+            .slide > .content { padding: 0.85rem 0.85rem 80px; }
+            .slide > .content .grid.grid-cols-3,
+            .slide > .content .grid.grid-cols-2 { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+            .nav-controls { bottom: 12px; padding: 6px 14px; gap: 10px; max-width: calc(100vw - 24px); }
+            .nav-btn { width: 32px; height: 32px; font-size: 1rem; }
+            .slide-dots { gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 140px; }
+            .slide-dots .dot { width: 7px; height: 7px; }
+            .slide-counter { font-size: 0.7rem; min-width: 32px; }
+            .stat-glow { font-size: 2.1rem !important; }
+        }
+
+        /* Ecrãs muito estreitos */
+        @media (max-width: 380px) {
+            .slide > .content { padding: 0.65rem 0.65rem 75px; }
+            .source-tag { font-size: 0.6rem; }
+        }
+
+        /* Ecrãs baixos / horizontal em telemóvel */
+        @media (max-height: 560px) {
+            .slide > .content { padding-top: 0.65rem; padding-bottom: 65px; }
+            .nav-controls { bottom: 6px; padding: 4px 12px; gap: 8px; }
+            .nav-btn { width: 28px; height: 28px; font-size: 0.9rem; }
+            .slide-dots .dot { width: 7px; height: 7px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+<div class="deck">
+
+    <!-- SLIDE 1: TÍTULO -->
+    <div class="slide slide-1 active" data-slide="1">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:500px;height:500px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:0.14;"></div>
+            <div class="blob" style="width:320px;height:320px;bottom:-80px;left:-60px;background:var(--color-accent-2);opacity:0.10;"></div>
+            <div class="blob" style="width:200px;height:200px;top:40%;left:10%;background:var(--color-accent-3);opacity:0.09;"></div>
+        </div>
+        <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+        <div class="content text-center">
+            <div style="font-size:80px;margin-bottom:1rem;animation:float 3s ease-in-out infinite;line-height:1;">💰</div>
+            <div class="reveal mb-2">
+                <span style="font-size:0.72rem;font-family:var(--font-body);text-transform:uppercase;letter-spacing:0.35em;color:var(--color-text-muted);">Gestão Estratégica de Pessoas · Aula Invertida</span>
+            </div>
+            <h1 class="font-display font-black bg-linear-to-br from-accent-1 via-accent-2 to-accent-1 bg-clip-text text-transparent tracking-tight mb-4 reveal" style="font-size:clamp(2.2rem,5vw,4rem);line-height:1.15;">
+                Literacia Financeira<br>como Alavanca de RH
+            </h1>
+            <p class="reveal" style="font-size:clamp(0.85rem,1.4vw,1.1rem);font-weight:300;color:var(--color-text-muted);letter-spacing:0.3em;text-transform:uppercase;">
+                Uma perspetiva não abordada em GEP
+            </p>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: O PROBLEMA INVISÍVEL -->
+    <div class="slide slide-2" data-slide="2">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:400px;height:400px;top:-60px;right:-60px;background:var(--color-accent-1);opacity:0.08;"></div>
+            <div class="blob" style="width:280px;height:280px;bottom:-50px;left:-40px;background:var(--color-accent-2);opacity:0.06;"></div>
+        </div>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">O Problema</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-6 reveal" style="font-size:clamp(1.6rem,3.5vw,2.6rem);">
+                O custo silencioso do stress financeiro
+            </h2>
+            <div class="grid grid-cols-3 gap-5">
+                <div class="reveal bg-glass-bg backdrop-blur-xl border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition text-center flex flex-col justify-between">
+                    <div>
+                        <div class="glow-pulse stat-glow font-black mb-1" style="font-size:2.6rem;color:var(--color-accent-1);" data-count="59" data-suffix="%">0%</div>
+                        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);">dos colaboradores</div>
+                        <p style="font-size:0.82rem;color:var(--color-text-secondary);margin-top:0.5rem;">afirmam que as suas preocupações financeiras afetam negativamente a produtividade no trabalho</p>
+                    </div>
+                    <div class="source-tag mt-3">PwC Employee Financial Wellness Survey, 2026</div>
+                </div>
+                <div class="reveal bg-glass-bg backdrop-blur-xl border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition text-center flex flex-col justify-between">
+                    <div>
+                        <div class="glow-pulse stat-glow font-black mb-1" style="font-size:2.6rem;color:var(--color-accent-1);" data-count="3" data-suffix="h+/sem">0</div>
+                        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);">perdidas por colaborador</div>
+                        <p style="font-size:0.82rem;color:var(--color-text-secondary);margin-top:0.5rem;">em preocupações financeiras durante o horário de trabalho, por semana</p>
+                    </div>
+                    <div class="source-tag mt-3">PwC Employee Financial Wellness Survey, 2025</div>
+                </div>
+                <div class="reveal bg-glass-bg backdrop-blur-xl border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition text-center flex flex-col justify-between">
+                    <div>
+                        <div class="glow-pulse stat-glow font-black mb-1" style="font-size:2.6rem;color:var(--color-accent-1);" data-count="78" data-suffix="%">0%</div>
+                        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);">dos gestores de RH</div>
+                        <p style="font-size:0.82rem;color:var(--color-text-secondary);margin-top:0.5rem;">confirmam que o stress financeiro dos colaboradores causou maior rotatividade no último ano</p>
+                    </div>
+                    <div class="source-tag mt-3">BrightPlan Wellness Barometer Survey, 2024 (SHRM)</div>
+                </div>
+            </div>
+            <div class="reveal mt-5" style="border-left:4px solid var(--color-accent-1);padding-left:1rem;">
+                <p style="font-size:0.9rem;color:var(--color-text-secondary);">Estes custos estão ausentes dos relatórios de RH tradicionais — mas estão diretamente refletidos nos resultados operacionais das organizações.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: PRESENTISMO FINANCEIRO -->
+    <div class="slide slide-3" data-slide="3">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:360px;height:360px;top:-50px;left:-50px;background:var(--color-accent-1);opacity:0.09;"></div>
+            <div class="blob" style="width:250px;height:250px;bottom:-40px;right:-40px;background:var(--color-accent-3);opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">Conceito Central</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-5 reveal" style="font-size:clamp(1.6rem,3.5vw,2.6rem);">
+                Presentismo Financeiro
+            </h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="reveal flex flex-col gap-4">
+                    <p style="font-size:0.9rem;color:var(--color-text-secondary);line-height:1.6;">
+                        O <strong style="color:var(--color-accent-1);">presentismo financeiro</strong> é definido na literatura como a redução de produtividade resultante de dificuldades financeiras pessoais, sem que o colaborador se ausente do posto de trabalho.
+                        <span class="source-tag block mt-1">Kim & Garman, Journal of Financial Counseling and Planning, 2004; Merrill et al., 2012</span>
+                    </p>
+                    <p style="font-size:0.9rem;color:var(--color-text-secondary);line-height:1.6;">
+                        Merrill et al. (2012) verificaram que o stress financeiro contribui para o presentismo de forma mais significativa do que limitações de saúde ou estados de ansiedade, com <strong style="color:var(--color-text);">40% dos colaboradores incapazes de se concentrar plenamente</strong> por razões financeiras.
+                    </p>
+                    <div class="bg-glass-bg border border-glass-border rounded-lg p-4">
+                        <p style="font-size:0.8rem;color:var(--color-text-muted);font-style:italic;">"O presentismo custa às empresas 2 a 3 vezes mais do que os custos diretos com saúde e seguro médico."</p>
+                        <p class="source-tag mt-1">LifeGuides / Journal of the American Medical Association, 2020</p>
+                    </div>
+                </div>
+                <div class="reveal flex flex-col gap-3 justify-center">
+                    <div class="bg-glass-bg border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition">
+                        <div style="font-size:1.5rem;margin-bottom:0.5rem;">📋</div>
+                        <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Manifestações observáveis</div>
+                        <ul style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.8;">
+                            <li>• Utilização de tempo de trabalho para tratar assuntos financeiros pessoais</li>
+                            <li>• Tomada de decisões com horizonte temporal reduzido</li>
+                            <li>• Menor capacidade criativa e de resolução de problemas</li>
+                            <li>• Propensão acrescida para erros e retrabalho</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: LIGAÇÃO À GEP -->
+    <div class="slide slide-4" data-slide="4">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:420px;height:420px;top:-80px;right:-70px;background:var(--color-accent-1);opacity:0.09;"></div>
+            <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:var(--color-accent-2);opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">A Ligação Estratégica</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-5 reveal" style="font-size:clamp(1.6rem,3.5vw,2.5rem);">
+                Literacia financeira como instrumento de RH
+            </h2>
+            <div class="grid grid-cols-3 gap-5">
+                <div class="reveal bg-glass-bg border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition flex flex-col justify-between">
+                    <div>
+                        <div style="font-size:1.8rem;margin-bottom:0.6rem;">📌</div>
+                        <div style="font-weight:600;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Retenção</div>
+                        <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.6;">Colaboradores sob stress financeiro são <strong style="color:var(--color-accent-1);">3 vezes mais propensos</strong> a procurar novo emprego, aumentando os custos de substituição.</p>
+                    </div>
+                    <div class="source-tag mt-3">PwC Employee Financial Wellness Survey, 2025</div>
+                </div>
+                <div class="reveal bg-glass-bg border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition flex flex-col justify-between">
+                    <div>
+                        <div style="font-size:1.8rem;margin-bottom:0.6rem;">📊</div>
+                        <div style="font-weight:600;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Envolvimento</div>
+                        <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.6;">83% dos colaboradores da Geração Z com acesso a programas de bem-estar financeiro utilizaram-nos para reduzir dívidas e aumentar poupança.</p>
+                    </div>
+                    <div class="source-tag mt-3">PwC Employee Financial Wellness Survey, 2026</div>
+                </div>
+                <div class="reveal bg-glass-bg border border-glass-border rounded-xl p-5 hover:-translate-y-1 transition flex flex-col justify-between">
+                    <div>
+                        <div style="font-size:1.8rem;margin-bottom:0.6rem;">🏢</div>
+                        <div style="font-weight:600;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Marca Empregadora</div>
+                        <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.6;">Programas de bem-estar financeiro melhoram a perceção da empresa como responsável, funcionando como fator de atração de talento qualificado.</p>
+                    </div>
+                    <div class="source-tag mt-3">HR.com State of Employee Financial Wellness, 2025</div>
+                </div>
+            </div>
+            <div class="reveal mt-4" style="border-left:4px solid var(--color-accent-1);padding-left:1rem;">
+                <p style="font-size:0.85rem;color:var(--color-text-secondary);">A GEP clássica centra-se em competências técnicas e comportamentais. A perspetiva apresentada defende que o bem-estar financeiro do colaborador é também uma responsabilidade estratégica da organização, com impacto mensurável em indicadores-chave de RH.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: CONTEXTO PORTUGAL / EUROPA -->
+    <div class="slide slide-5" data-slide="5">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:380px;height:380px;top:-60px;right:-60px;background:var(--color-accent-1);opacity:0.08;"></div>
+            <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:var(--color-accent-3);opacity:0.07;"></div>
+        </div>
+        <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">Enquadramento</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-5 reveal" style="font-size:clamp(1.6rem,3.5vw,2.5rem);">
+                A resposta institucional em Portugal e na Europa
+            </h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="reveal flex flex-col gap-4">
+                    <div class="bg-glass-bg rounded-xl p-5" style="border-left:4px solid var(--color-accent-1);">
+                        <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">🇪🇺 Estratégia da UE — 2024</div>
+                        <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.6;">A Comissão Europeia publicou novas diretrizes para promover a literacia financeira dos cidadãos, enquadrando-a como pilar de coesão social e competitividade económica.</p>
+                        <div class="source-tag mt-1">Pessoas 2030 / Comissão Europeia, maio 2024</div>
+                    </div>
+                    <div class="bg-glass-bg rounded-xl p-5" style="border-left:4px solid var(--color-accent-2);">
+                        <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">🇵🇹 Plano Nacional — Todos Contam</div>
+                        <p style="font-size:0.8rem;color:var(--color-text-secondary);line-height:1.6;">O Banco de Portugal, a CMVM e a ASF disponibilizam um Referencial de Formação Financeira para Empresas, com módulos práticos para integração em programas de RH.</p>
+                        <div class="source-tag mt-1">Banco de Portugal / INFE-OCDE, Referencial para Empresas, 2024</div>
+                    </div>
+                </div>
+                <div class="reveal flex flex-col gap-3">
+                    <p style="font-size:0.85rem;color:var(--color-text-secondary);line-height:1.6;">Portugal apresenta o <strong style="color:var(--color-accent-1);">segundo pior desempenho em literacia financeira na União Europeia</strong>, de acordo com estudo do grupo de reflexão Bruegel (fevereiro 2024):</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-glass-bg border border-glass-border rounded-lg p-4 text-center">
+                            <div class="stat-glow font-black" style="font-size:2rem;color:var(--color-accent-1);" data-count="42" data-suffix="%">0%</div>
+                            <div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:4px;">respondem corretamente a 3/5 questões básicas de finanças</div>
+                            <div class="source-tag">vs. 52% média UE · Bruegel, 2024</div>
+                        </div>
+                        <div class="bg-glass-bg border border-glass-border rounded-lg p-4 text-center">
+                            <div class="stat-glow font-black" style="font-size:2rem;color:var(--color-accent-1);" data-count="48" data-suffix="%">0%</div>
+                            <div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:4px;">dos portugueses atingem o nível básico de conhecimentos financeiros</div>
+                            <div class="source-tag">vs. 58% média OCDE · Banco de Portugal, 2023</div>
+                        </div>
+                        <div class="bg-glass-bg border border-glass-border rounded-lg p-4 text-center">
+                            <div class="stat-glow font-black" style="font-size:2rem;color:var(--color-accent-1);" data-count="21" data-suffix=".º">0.º</div>
+                            <div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:4px;">lugar em 39 países no indicador de conhecimentos financeiros</div>
+                            <div class="source-tag">OCDE-INFE, 2023</div>
+                        </div>
+                        <div class="bg-glass-bg border border-glass-border rounded-lg p-4 text-center">
+                            <div class="stat-glow font-black" style="font-size:2rem;color:var(--color-accent-1);">+1%</div>
+                            <div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:4px;">de progresso em literacia financeira entre 2020 e 2023</div>
+                            <div class="source-tag">Banco de Portugal / OCDE, 2023</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: COMO IMPLEMENTAR -->
+    <div class="slide slide-6" data-slide="6">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:350px;height:350px;top:-50px;right:-50px;background:var(--color-accent-1);opacity:0.09;"></div>
+            <div class="blob" style="width:220px;height:220px;bottom:-40px;left:-30px;background:var(--color-accent-2);opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">Proposta Prática</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-5 reveal" style="font-size:clamp(1.6rem,3.5vw,2.4rem);">
+                Modelo de implementação para uma PME portuguesa
+            </h2>
+            <div class="grid grid-cols-2 gap-5">
+                <div class="reveal flex flex-col gap-3">
+                    <div class="bg-glass-bg border border-glass-border rounded-xl p-4 hover:-translate-y-1 transition flex gap-4 items-start">
+                        <div style="font-size:1.4rem;flex-shrink:0;">1.</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.3rem;">Diagnóstico organizacional</div>
+                            <p style="font-size:0.78rem;color:var(--color-text-secondary);line-height:1.5;">Incluir um módulo de bem-estar financeiro no inquérito anual de clima organizacional — identificar o nível de stress e as principais lacunas de literacia por departamento.</p>
+                        </div>
+                    </div>
+                    <div class="bg-glass-bg border border-glass-border rounded-xl p-4 hover:-translate-y-1 transition flex gap-4 items-start">
+                        <div style="font-size:1.4rem;flex-shrink:0;">2.</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.3rem;">Formação modular em parceria institucional</div>
+                            <p style="font-size:0.78rem;color:var(--color-text-secondary);line-height:1.5;">Adoção do Referencial de Formação Financeira do Banco de Portugal (Todos Contam), com sessões trimestrais sobre gestão orçamental, crédito responsável e poupança para a reforma.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal flex flex-col gap-3">
+                    <div class="bg-glass-bg border border-glass-border rounded-xl p-4 hover:-translate-y-1 transition flex gap-4 items-start">
+                        <div style="font-size:1.4rem;flex-shrink:0;">3.</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.3rem;">Benefícios de bem-estar financeiro</div>
+                            <p style="font-size:0.78rem;color:var(--color-text-secondary);line-height:1.5;">Acesso a consultores financeiros independentes, plano de poupança reforma (PPR) com contribuição patronal, e ferramentas digitais de gestão financeira pessoal.</p>
+                        </div>
+                    </div>
+                    <div class="bg-glass-bg border border-glass-border rounded-xl p-4 hover:-translate-y-1 transition flex gap-4 items-start">
+                        <div style="font-size:1.4rem;flex-shrink:0;">4.</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.3rem;">Avaliação do retorno</div>
+                            <p style="font-size:0.78rem;color:var(--color-text-secondary);line-height:1.5;">Monitorização trimestral de indicadores: rotatividade voluntária, eNPS, absentismo e produtividade por equipa — para demonstrar o retorno do investimento ao conselho de administração.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal mt-3 text-center">
+                <span style="font-size:0.72rem;color:var(--color-text-muted);font-style:italic;">Custo estimado por colaborador: 150–300€/ano · ROI estimado de 3:1 em 18 meses via redução de turnover e ganhos de produtividade — Great Place to Work / Wellness Workdays, 2025</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: CONCLUSÃO -->
+    <div class="slide slide-7" data-slide="7">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:500px;height:500px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:0.15;"></div>
+            <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:var(--color-accent-2);opacity:0.12;"></div>
+            <div class="blob" style="width:200px;height:200px;top:35%;left:12%;background:var(--color-accent-3);opacity:0.09;"></div>
+        </div>
+        <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+        <div class="content text-center">
+            <div style="font-size:65px;margin-bottom:1rem;animation:float 3s ease-in-out infinite;line-height:1;" class="reveal">🎯</div>
+            <h2 class="font-display font-black bg-linear-to-br from-accent-1 via-accent-2 to-accent-1 bg-clip-text text-transparent mb-5 reveal" style="font-size:clamp(1.7rem,4vw,3.2rem);line-height:1.2;">
+                Gerir pessoas é gerir<br>a sua vida inteira
+            </h2>
+            <p class="reveal" style="font-size:0.95rem;color:var(--color-text-secondary);max-width:680px;margin:0 auto 1.8rem;line-height:1.7;">
+                A GEP tradicional centra-se no colaborador <em>dentro</em> da organização. A perspetiva apresentada defende que o colaborador <strong style="color:var(--color-text);">traz as suas vulnerabilidades financeiras para o contexto laboral</strong> — e que a organização dispõe de instrumentos concretos para transformar esse risco numa vantagem estratégica.
+            </p>
+            <div class="grid grid-cols-3 gap-4 reveal" style="max-width:720px;margin:0 auto;">
+                <div class="bg-glass-bg border border-glass-border rounded-lg p-4 hover:-translate-y-1 transition">
+                    <div style="color:var(--color-accent-1);font-weight:700;font-size:0.85rem;margin-bottom:0.3rem;">Retenção</div>
+                    <div style="font-size:0.75rem;color:var(--color-text-muted);">Redução do turnover voluntário e dos custos de recrutamento associados</div>
+                </div>
+                <div class="bg-glass-bg border border-glass-border rounded-lg p-4 hover:-translate-y-1 transition">
+                    <div style="color:var(--color-accent-1);font-weight:700;font-size:0.85rem;margin-bottom:0.3rem;">Produtividade</div>
+                    <div style="font-size:0.75rem;color:var(--color-text-muted);">Eliminação do presentismo financeiro e recuperação de horas de trabalho efetivo</div>
+                </div>
+                <div class="bg-glass-bg border border-glass-border rounded-lg p-4 hover:-translate-y-1 transition">
+                    <div style="color:var(--color-accent-1);font-weight:700;font-size:0.85rem;margin-bottom:0.3rem;">Marca Empregadora</div>
+                    <div style="font-size:0.75rem;color:var(--color-text-muted);">Diferenciação ética e reputacional no mercado de atração de talento</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+    <span class="slide-counter" id="counter">1 / 7</span>
+</div>
+
+<script>
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    const dotsContainer = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+    function goToSlide(n) {
+        const prev = document.querySelector('.slide.active');
+        const next = document.querySelector(`.slide[data-slide="${n}"]`);
+        if (prev) prev.classList.remove('active');
+        if (next) { next.classList.add('active'); animateSlide(next); }
+        current = n; updateNav();
+    }
+    function changeSlide(dir) { let next = current + dir; if (next < 1) next = total; if (next > total) next = 1; goToSlide(next); }
+    function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => { d.classList.toggle('active', i + 1 === current); }); counter.textContent = current + ' / ' + total; }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+        if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+    });
+    function toggleFullscreen() {
+        const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+        if (!fsEl) {
+            const el = document.documentElement;
+            (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+        } else {
+            (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+        }
+    }
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+
+    function animateSlide(slide) {
+        slide.querySelectorAll('.reveal').forEach((el, i) => {
+            el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
+            el.offsetHeight;
+            const delay = i * 0.08;
+            el.style.transition = `opacity 0.35s ease ${delay}s, transform 0.35s ease ${delay}s`;
+            el.style.opacity = '1'; el.style.transform = 'translateY(0px)';
+        });
+        animateSlideEffects(slide);
+    }
+
+    function animateSlideEffects(slide) {
+        slide.querySelectorAll('[data-count]:not(.counted)').forEach(el => {
+            el.classList.add('counted');
+            const target = parseInt(el.dataset.count);
+            const suffix = el.dataset.suffix || '', prefix = el.dataset.prefix || '';
+            let cur = 0; const step = target / 40;
+            const timer = setInterval(() => { cur += step; if (cur >= target) { cur = target; clearInterval(timer); } el.textContent = prefix + Math.round(cur).toLocaleString() + suffix; }, 30);
+        });
+        slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+            bar.classList.add('fill-init');
+            bar.style.width = '0%'; bar.style.transition = `width 0.6s ease ${i * 0.1}s`; bar.offsetHeight; bar.style.width = bar.dataset.width + '%';
+        });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        const spotlight = document.querySelector('.mouse-spotlight');
+        if (spotlight) { spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(201,168,76,0.06), transparent 40%)`; }
+    });
+
+    (function() {
+        let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+        const cx = window.innerWidth/2, cy = window.innerHeight/2;
+        document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        (function tick() {
+            const ox = (mouseX-cx)/cx, oy = (mouseY-cy)/cy;
+            document.querySelectorAll('.deco-shape').forEach(shape => {
+                const speed = parseFloat(shape.dataset.speed)||0.03;
+                shape.style.transform = `translate(${ox*speed*100}px,${oy*speed*100}px)`;
+            });
+            requestAnimationFrame(tick);
+        })();
+    })();
+
+    window.initParticles = function(canvas, options) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        const interactive = options.interactive !== false;
+        const count = options.count || (interactive ? 55 : 18);
+        let mx = -1000, my = -1000;
+        const [r,g,b] = [201,168,76];
+        const particles = Array.from({length:count}, () => ({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3, size:Math.random()*2.5+0.8, alpha:Math.random()*0.35+0.1 }));
+        if (interactive) { canvas.addEventListener('mousemove',(e)=>{const rect=canvas.getBoundingClientRect();mx=e.clientX-rect.left;my=e.clientY-rect.top;}); canvas.addEventListener('mouseleave',()=>{mx=-1000;my=-1000;}); }
+        (function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                if (interactive) { const dx=p.x-mx,dy=p.y-my,dist=Math.sqrt(dx*dx+dy*dy); if (dist<120){const force=(120-dist)/120*2;p.vx+=(dx/dist)*force*0.1;p.vy+=(dy/dist)*force*0.1;} }
+                p.vx*=0.98;p.vy*=0.98;p.x+=p.vx;p.y+=p.vy;
+                if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;
+                ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(${r},${g},${b},${p.alpha})`;ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        })();
+    };
+    document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, {interactive:true,count:55}));
+    document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, {interactive:false,count:18}));
+
+    try { animateSlide(document.querySelector('.slide.active')); } catch(e) { console.warn(e); }
+</script>
+</body>
+</html>
