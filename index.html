@@ -93,6 +93,13 @@
         .bar-track { background: rgba(255,255,255,0.07); border-radius: 4px; height: 10px; width: 100%; overflow: hidden; }
         .source-tag { font-size: 0.65rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
 
+        .source-link { display: block; text-decoration: none; color: inherit; background: var(--color-glass-bg); border: 1px solid var(--color-glass-border); border-radius: 0.5rem; padding: 0.7rem 0.85rem; transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease; }
+        .source-link:hover { transform: translateY(-2px); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06); }
+        .source-link .src-title { font-weight: 600; font-size: 0.82rem; color: var(--color-text); line-height: 1.35; }
+        .source-link .src-meta { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 3px; line-height: 1.4; }
+        .source-link .src-url { font-size: 0.68rem; color: var(--color-accent-1); margin-top: 5px; word-break: break-all; display: flex; align-items: center; gap: 4px; }
+        .source-section-title { font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--color-accent-1); margin-bottom: 0.45rem; padding-bottom: 0.3rem; border-bottom: 1px solid rgba(201,168,76,0.2); }
+
         /* Tablets e ecrãs médios */
         @media (max-width: 900px) {
             .slide > .content { padding: clamp(1rem, 4vw, 2rem) clamp(1rem, 4vw, 2rem) 90px; }
@@ -130,11 +137,44 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
         }
+
+        /* Logo IPAM — branding institucional fixo */
+        .ipam-brand {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 50;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 12px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .ipam-brand img { height: 36px; width: auto; display: block; }
+        @media (max-width: 900px) {
+            .ipam-brand { top: 14px; left: 14px; padding: 6px 10px; }
+            .ipam-brand img { height: 28px; }
+        }
+        @media (max-width: 640px) {
+            .ipam-brand { top: 10px; left: 10px; padding: 4px 8px; border-radius: 8px; }
+            .ipam-brand img { height: 22px; }
+        }
+        @media (max-height: 560px) {
+            .ipam-brand { top: 8px; left: 8px; padding: 4px 7px; }
+            .ipam-brand img { height: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+<div class="ipam-brand" aria-label="IPAM — Marketing Leads Business">
+    <img src="logo_ipam_png_12a23fb2-f005-4752-9260-7829cb3a653a.png" alt="IPAM">
+</div>
 
 <div class="deck">
 
@@ -435,13 +475,123 @@
         </div>
     </div>
 
+    <!-- SLIDE 8: FONTES E REFERÊNCIAS -->
+    <div class="slide slide-8" data-slide="8">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:400px;height:400px;top:-60px;right:-60px;background:var(--color-accent-1);opacity:0.08;"></div>
+            <div class="blob" style="width:280px;height:280px;bottom:-50px;left:-40px;background:var(--color-accent-2);opacity:0.06;"></div>
+            <div class="blob" style="width:200px;height:200px;top:40%;left:8%;background:var(--color-accent-3);opacity:0.05;"></div>
+        </div>
+        <div class="content">
+            <div class="reveal mb-1">
+                <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.3em;color:var(--color-accent-1);font-family:var(--font-body);">Referências</span>
+            </div>
+            <h2 class="font-display font-bold text-text mb-3 reveal" style="font-size:clamp(1.6rem,3.5vw,2.5rem);">
+                Fontes consultadas
+            </h2>
+            <p class="reveal mb-5" style="font-size:0.85rem;color:var(--color-text-muted);max-width:720px;line-height:1.55;">
+                Os dados, conceitos e enquadramentos apresentados ao longo dos slides anteriores são suportados pelas fontes listadas abaixo. Cada referência tem ligação direta à fonte original.
+            </p>
+
+            <div class="grid grid-cols-2 gap-5">
+
+                <!-- COLUNA ESQUERDA: ESTUDOS E SURVEYS DE RH -->
+                <div class="reveal flex flex-col gap-2.5">
+                    <div class="source-section-title">Estudos e Surveys sobre Bem-estar Financeiro</div>
+
+                    <a href="https://www.pwc.com/us/en/services/consulting/workforce-of-the-future/library/employee-financial-wellness-survey.html" target="_blank" rel="noopener noreferrer" class="source-link">
+                        <div class="src-title">PwC — Employee Financial Wellness Survey</div>
+                        <div class="src-meta">Edições 2025 e 2026 · PricewaterhouseCoopers</div>
+                        <div class="src-url">↗ pwc.com</div>
+                    </a>
+
+                    <a href="https://www.brightplan.com/wellness-barometer-survey" target="_blank" rel="noopener noreferrer" class="source-link">
+                        <div class="src-title">BrightPlan — Wellness Barometer Survey 2024</div>
+                        <div class="src-meta">Divulgado pela SHRM (Society for Human Resource Management)</div>
+                        <div class="src-url">↗ brightplan.com</div>
+                    </a>
+
+                    <a href="https://www.hr.com/en/resources/free_research_white_papers/the-state-of-employee-financial-wellness-2025_research_paper.html" target="_blank" rel="noopener noreferrer" class="source-link">
+                        <div class="src-title">HR.com — The State of Employee Financial Wellness 2025</div>
+                        <div class="src-meta">HR Research Institute</div>
+                        <div class="src-url">↗ hr.com</div>
+                    </a>
+
+                    <a href="https://www.greatplacetowork.com/resources/blog" target="_blank" rel="noopener noreferrer" class="source-link">
+                        <div class="src-title">Great Place to Work / Wellness Workdays</div>
+                        <div class="src-meta">Estudos sobre ROI de programas de bem-estar financeiro, 2025</div>
+                        <div class="src-url">↗ greatplacetowork.com</div>
+                    </a>
+                </div>
+
+                <!-- COLUNA DIREITA: ACADÉMICOS + INSTITUCIONAL -->
+                <div class="reveal flex flex-col gap-4">
+
+                    <div class="flex flex-col gap-2.5">
+                        <div class="source-section-title">Investigação Académica</div>
+
+                        <a href="https://www.afcpe.org/news-and-publications/journal-of-financial-counseling-and-planning/" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">Kim, J. & Garman, E. T. (2004)</div>
+                            <div class="src-meta">Financial Stress, Pay Satisfaction and Workplace Performance · Journal of Financial Counseling and Planning · AFCPE</div>
+                            <div class="src-url">↗ afcpe.org</div>
+                        </a>
+
+                        <a href="https://journals.lww.com/joem/pages/default.aspx" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">Merrill, R. M. et al. (2012)</div>
+                            <div class="src-meta">Presenteeism according to healthy behaviors, physical health, and work environment · Journal of Occupational and Environmental Medicine</div>
+                            <div class="src-url">↗ journals.lww.com</div>
+                        </a>
+
+                        <a href="https://jamanetwork.com/" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">JAMA — Journal of the American Medical Association (2020)</div>
+                            <div class="src-meta">Estudos sobre o custo do presentismo · citação via LifeGuides</div>
+                            <div class="src-url">↗ jamanetwork.com</div>
+                        </a>
+                    </div>
+
+                    <div class="flex flex-col gap-2.5">
+                        <div class="source-section-title">Enquadramento Institucional (PT / UE)</div>
+
+                        <a href="https://www.todoscontam.pt/" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">Plano Nacional de Formação Financeira — Todos Contam</div>
+                            <div class="src-meta">Banco de Portugal, CMVM e ASF · Referencial de Formação Financeira para Empresas (2024)</div>
+                            <div class="src-url">↗ todoscontam.pt</div>
+                        </a>
+
+                        <a href="https://www.bruegel.org/policy-brief/financial-literacy-european-union" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">Bruegel — Financial Literacy in the European Union</div>
+                            <div class="src-meta">Policy Brief, fevereiro 2024 · think tank europeu de política económica</div>
+                            <div class="src-url">↗ bruegel.org</div>
+                        </a>
+
+                        <a href="https://finance.ec.europa.eu/consumer-finance-and-payments/financial-literacy_en" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">Comissão Europeia — Financial Literacy (2024)</div>
+                            <div class="src-meta">DG FISMA · Estratégia europeia para literacia financeira · Programa Pessoas 2030</div>
+                            <div class="src-url">↗ finance.ec.europa.eu</div>
+                        </a>
+
+                        <a href="https://www.oecd.org/en/about/programmes/international-network-on-financial-education.html" target="_blank" rel="noopener noreferrer" class="source-link">
+                            <div class="src-title">OCDE-INFE — Adult Financial Literacy Survey 2023</div>
+                            <div class="src-meta">International Network on Financial Education · ranking de 39 países</div>
+                            <div class="src-url">↗ oecd.org</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal mt-4 text-center">
+                <p style="font-size:0.7rem;color:var(--color-text-muted);font-style:italic;">Apresentação elaborada no âmbito da unidade curricular de Gestão Estratégica de Pessoas · Aula Invertida</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div class="nav-controls">
     <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
     <div class="slide-dots" id="dots"></div>
     <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
-    <span class="slide-counter" id="counter">1 / 7</span>
+    <span class="slide-counter" id="counter">1 / 8</span>
 </div>
 
 <script>
